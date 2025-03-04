@@ -1,11 +1,4 @@
 
-const express = require("express")
+import { start } from "./server.js";
 
-
-const app = express()
-
-
-
-
-
-console.log(app)
+start();
