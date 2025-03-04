@@ -1,12 +1,12 @@
 
 import express from "express";
 import {
-  signupUser,
   loginUser,
   activateUser,
   sendResetPassowrdToken,
   verifyResetPasswordToken,
   confirmResetPassword,
+  registerPassenger,
 } from "../controllers/userController.js";
 
 import { body } from "express-validator";
@@ -64,7 +64,7 @@ router.post("/signup",
     .withMessage(
       `Confirm Password must be at least 6 characters length`,
     ),
-    signupUser); // Signup new user
+    registerPassenger); // Signup new user
 
 
 

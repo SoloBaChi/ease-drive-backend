@@ -61,23 +61,23 @@ export const getAllUsers = async (req, res) => {
   }
 };
 
-// Signup
-export const signupUser = async (req, res) => {
+//Passenger  Signup
+export const registerPassenger = async (req, res) => {
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
     return res
       .status(400)
       .json(new ResponseMessage("error", 400, errors.array()[0].msg));
   }
-  const { name, userName, email, password,confirmPassword } = req.body;
+  const { firstName, lastName , email, password, confirmPassword, phoneNumber } = req.body;
 
   try {
     // Check if a user with the given email or userName already exists
-    const existingUser = await User.findOne({ $or: [{ email }, { userName }] });
+    const existingUser = await User.findOne({email});
     if (existingUser) {
       return res.status(400).json({
         message:
-          "User already exists. Please use a different email or userName.",
+          "User already exists. Please use a different email or account.",
       });
     }
 
@@ -93,9 +93,9 @@ export const signupUser = async (req, res) => {
     const activationToken = await generateActivationToken();
 
     // Create the user
-    const user = await User.create({
-      name,
-      userName,
+     await User.create({
+      firstName,
+      lastName,
       email,
       password: await bcrypt.hash(password, 10) ,
       confirmPassword:await bcrypt.hash(confirmPassword, 10),
@@ -104,10 +104,7 @@ export const signupUser = async (req, res) => {
     });
 
     // Create an activation link
-    const activationLink = `https://bclicscom.vercel.app/activate?email=${email}&token=${activationToken}`;
-
-    // Generate a token and set it in a cookie
-    // generateToken(user._id, res);
+    const activationLink = `https://EaseDrivecom.vercel.app/activate?email=${email}&token=${activationToken}`;
 
     // Send a successful response
        // Send the Activation link to the email
@@ -122,7 +119,7 @@ export const signupUser = async (req, res) => {
       const mailOptions = {
         from: process.env.EMAIL_FROM,
         to: email,
-        subject: "Welcome to Bclics!",
+        subject: "Welcome to EaseDrive!",
         // attachments: [
         //   {
         //     filename: "logo.png",
@@ -135,7 +132,7 @@ export const signupUser = async (req, res) => {
         <head>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>Activate Your Bclics Account</title>
+        <title>Activate Your EaseDrive Account</title>
         <style>
           body {
             font-family: Arial, sans-serif;
@@ -222,9 +219,9 @@ export const signupUser = async (req, res) => {
       </head>
       <body>
         <div class="email-container">
-          <div class="header">Welcome to Bclics!</div>
-          <p>Dear ${userName},</p>
-          <p>Thank you for signing up with <strong>Bclics</strong>, your ultimate platform for connecting products and services. We're thrilled to have you join us.</p>
+          <div class="header">Welcome to EaseDrive!</div>
+          <p>Dear ${lastName} ${firstName},</p>
+          <p>Thank you for signing up with <strong>EaseDrive</strong>, your ultimate platform for booking rides. We're thrilled to have you join us.</p>
           <p>To get started, please activate your account by clicking the button below:</p>
           <p style="text-align: center;">
             <a href="${activationLink}" class="button">Activate My Account</a>
@@ -233,10 +230,10 @@ export const signupUser = async (req, res) => {
           <p style="word-break: break-word;">
             <a href="${activationLink}" style="color: #0056b3;">${activationLink}</a>
           </p>
-          <p>If you didn’t sign up for Bclics, please disregard this email.</p>
+          <p>If you didn’t sign up for EaseDrive, please disregard this email.</p>
           <div class="footer">
-            &copy; ${currentYear} Bclics. All rights reserved.  
-            <br>Need help? <a href="mailto:bclics01@gmail.com" style="color: #0056b3;">Contact Us</a>
+            &copy; ${currentYear} EaseDrive. All rights reserved.  
+            <br>Need help? <a href="mailto:info.easedrive@gmail.com" style="color: #0056b3;">Contact Us</a>
           </div>
         </div>
       </body>
@@ -282,7 +279,7 @@ export const activateUser = async (req, res) => {
       // console.log("user does not exist");
       return res
         .status(404)
-        .json(new ResponseMessage("error", 404, "Invalid Activation Token"));
+        .json(new ResponseMessage("error", 404, "Invalid Activation Token, Please Login"));
     }
     // Activate the user and save to the DB
     user.isActive = true;
@@ -291,6 +288,7 @@ export const activateUser = async (req, res) => {
 
     // Generate Access token
     generateToken(user._id, res);
+
     // send email for account comfirmation
     const transporter = nodemailer.createTransport({
       service: "gmail",
@@ -405,16 +403,16 @@ export const activateUser = async (req, res) => {
       <body>
         <div class="email-container">
           <div class="header">Your Account is Ready!</div>
-          <p>Dear ${user.userName},</p>
-          <p>We’re excited to inform you that your <strong>Bclics</strong> account has been successfully activated!</p>
-          <p>You can now enjoy seamless access to our platform, connecting products and services to suit your needs anytime, anywhere.</p>
+          <p>Dear${user.lastName}  ${user.firstName},</p>
+          <p>We’re excited to inform you that your <strong>EaseDrive</strong> account has been successfully activated!</p>
+          <p>You can now enjoy seamless access to our platform, Booking your rides anytime, anywhere.</p>
           <p style="text-align: center;">
-            <a href="https://bclicscom.vercel.app/" class="button">Log In to My Account</a>
+            <a href="https://ease-drive.netlify.app/" class="button">Log In to My Account</a>
           </p>
-          <p>If you have any questions or need support, feel free to contact us at <a href="mailto:bclics01@gmail.com" style="color: #0056b3;">support@bclics.com</a>.</p>
+          <p>If you have any questions or need support, feel free to contact us at <a href="mailto:info.easedrive@gmail.com" style="color: #0056b3;">support@EaseDrive.com</a>.</p>
           <div class="footer">
-            &copy; 2024 Bclics. All rights reserved.  
-            <br>Need help? <a href="mailto:bclics01@gmail.com" style="color: #0056b3;">Contact Us</a>
+            &copy; ${currentYear} EaseDrive. All rights reserved.  
+            <br>Need help? <a href="mailto:EaseDrive01@gmail.com" style="color: #0056b3;">Contact Us</a>
           </div>
         </div>
       </body>
@@ -460,18 +458,16 @@ export const loginUser = async (req, res) => {
       .json(new ResponseMessage("error", 400, errors.array()[0].msg));
   }
 
-  const { userName, password } = req.body;
+  const {email, password } = req.body;
 
   try {
     // Check if user exists by userName or email
-    const user = await User.findOne({
-      $or: [{ userName }, { email: userName }],
-    });
+    const user = await User.findOne({email});
  
     if (!user) {
       return res
         .status(400)
-        .json({ message: "userName or email does not exist." });
+        .json({ message: "Email does not exist." });
     }
 
      // check if the user has been activated
@@ -501,8 +497,9 @@ export const loginUser = async (req, res) => {
       message: "Login successful",
       data: {
         id: user._id,
-        name: user.name,
-        userName: user.userName,
+        firstName:user.firstName,
+        lastName:user.lastName,
+        fullName: `${user.lastName} ${user.firstName}`,
         email: user.email,
       },
     });
@@ -613,7 +610,7 @@ export const updateUserProfile = async(req,res) => {
         await cloudinary.uploader.destroy(publicId);        
       }
       const uploadedResponse = await cloudinary.uploader.upload(profileImage,{
-       folder: "bclics-profiles",
+       folder: "EaseDrive-profiles",
        resource_type: "auto",
       });
       profileImage = uploadedResponse.secure_url;
@@ -823,16 +820,16 @@ export const updateUserPassword = async(req, res) => {
           <p>Hi ${user.userName},</p>
 
           <p>
-           Your password has successfully been updated at <a href="https://bclicscom.vercel.app/">Bclics</a>
+           Your password has successfully been updated at <a href="https://EaseDrivecom.vercel.app/">EaseDrive</a>
            </p>
            <p style="text-align: center;">
-            <a href="https://bclicscom.vercel.app/" class="button">Log In to My Account</a>
+            <a href="https://EaseDrivecom.vercel.app/" class="button">Log In to My Account</a>
           </p>
           
-          <p>If you have any questions or need support, feel free to contact us at <a href="mailto:bclics01@gmail.com" style="color: #0056b3;">support@bclics.com</a>.</p>
+          <p>If you have any questions or need support, feel free to contact us at <a href="mailto:EaseDrive01@gmail.com" style="color: #0056b3;">support@EaseDrive.com</a>.</p>
           <div class="footer">
-            &copy; 2024 Bclics. All rights reserved.  
-            <br>Need help? <a href="mailto:bclics01@gmail.com" style="color: #0056b3;">Contact Us</a>
+            &copy; 2024 EaseDrive. All rights reserved.  
+            <br>Need help? <a href="mailto:EaseDrive01@gmail.com" style="color: #0056b3;">Contact Us</a>
           </div>
 
           <p>If you did not initiate this request , please kindly contact us or ignore this message !</p>
@@ -923,7 +920,7 @@ export const sendResetPassowrdToken = async (req, res) => {
     const mailOptions = {
       from: process.env.EMAIL_FROM,
       to: user.email,
-      subject: "Bclics Password Reset Code",
+      subject: "EaseDrive Password Reset Code",
       html: `
       <html lang="en">
         <head>
@@ -975,7 +972,7 @@ export const sendResetPassowrdToken = async (req, res) => {
             <p class="reset-code">${authCode}</p>
             <p>The code is valid for 5 minutes. If you didn’t request a password reset, please ignore this email.</p>
             <div class="footer">
-              &copy; 2024 Bclics. All rights reserved.
+              &copy; 2024 EaseDrive. All rights reserved.
             </div> 
           </div>
         </body>
